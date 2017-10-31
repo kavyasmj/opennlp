@@ -15,20 +15,14 @@
  * limitations under the License.
  */
 
+
 package opennlp.tools.tokenize;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-import org.junit.Assert;
 import org.junit.Test;
-
-import opennlp.tools.formats.ResourceAsStreamFactory;
-import opennlp.tools.util.InputStreamFactory;
-import opennlp.tools.util.InsufficientTrainingDataException;
-import opennlp.tools.util.ObjectStream;
-import opennlp.tools.util.PlainTextByLineStream;
-import opennlp.tools.util.TrainingParameters;
 
 /**
  * Tests for the {@link TokenizerME} class.
@@ -48,11 +42,11 @@ public class TokenizerMETest {
 
     TokenizerME tokenizer = new TokenizerME(model);
 
-    String[] tokens = tokenizer.tokenize("test,");
+    String tokens[] = tokenizer.tokenize("test,");
 
-    Assert.assertEquals(2, tokens.length);
-    Assert.assertEquals("test", tokens[0]);
-    Assert.assertEquals(",", tokens[1]);
+    assertEquals(2, tokens.length);
+    assertEquals("test", tokens[0]);
+    assertEquals(",", tokens[1]);
   }
 
   @Test
@@ -60,35 +54,40 @@ public class TokenizerMETest {
     TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
 
     TokenizerME tokenizer = new TokenizerME(model);
-    String[] tokens = tokenizer.tokenize("Sounds like it's not properly thought through!");
 
-    Assert.assertEquals(9, tokens.length);
-    Assert.assertEquals("Sounds", tokens[0]);
-    Assert.assertEquals("like", tokens[1]);
-    Assert.assertEquals("it", tokens[2]);
-    Assert.assertEquals("'s", tokens[3]);
-    Assert.assertEquals("not", tokens[4]);
-    Assert.assertEquals("properly", tokens[5]);
-    Assert.assertEquals("thought", tokens[6]);
-    Assert.assertEquals("through", tokens[7]);
-    Assert.assertEquals("!", tokens[8]);
+    String tokens[] = tokenizer.tokenize("Sounds like it's not properly thought through!");
+
+    assertEquals(9, tokens.length);
+    assertEquals("Sounds", tokens[0]);
+    assertEquals("like", tokens[1]);
+    assertEquals("it", tokens[2]);
+    assertEquals("'s", tokens[3]);
+    assertEquals("not", tokens[4]);
+    assertEquals("properly", tokens[5]);
+    assertEquals("thought", tokens[6]);
+    assertEquals("through", tokens[7]);
+    assertEquals("!", tokens[8]);
   }
   
-  @Test(expected = InsufficientTrainingDataException.class)
-  public void testInsufficientData() throws IOException {
-
-    InputStreamFactory trainDataIn = new ResourceAsStreamFactory(
-        TokenizerModel.class, "/opennlp/tools/tokenize/token-insufficient.train");
-
-    ObjectStream<TokenSample> samples = new TokenSampleStream(
-        new PlainTextByLineStream(trainDataIn, StandardCharsets.UTF_8));
-
-    TrainingParameters mlParams = new TrainingParameters();
-    mlParams.put(TrainingParameters.ITERATIONS_PARAM, 100);
-    mlParams.put(TrainingParameters.CUTOFF_PARAM, 5);
-
-    TokenizerME.train(samples, TokenizerFactory.create(null, "eng", null, true, null), mlParams);
-
-  }
   
+  @Test
+  public void testTokenizerEmoji() throws IOException {
+    TokenizerModel model = TokenizerTestUtil.createMaxentTokenModel();
+
+    TokenizerME tokenizer = new TokenizerME(model);
+
+    String tokens[] = tokenizer.tokenize("Hoseok yelled out Puma at the end 😂😂😂");
+
+    assertEquals(10, tokens.length);
+    assertEquals("Hoseok", tokens[0]);
+    assertEquals("yelled", tokens[1]);
+    assertEquals("out", tokens[2]);
+    assertEquals("Puma", tokens[3]);
+    assertEquals("at", tokens[4]);
+    assertEquals("the", tokens[5]);
+    assertEquals("end", tokens[6]);
+    assertEquals("😂", tokens[7]);
+    assertEquals("😂", tokens[8]);
+    assertEquals("😂", tokens[9]);
+  }
 }
